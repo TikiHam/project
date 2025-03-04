@@ -1,21 +1,21 @@
-# We are going to make a roulette game, The program take a name of a player and how much money he want to bet.
-# Then we ask to place a bet. We can make a bet according to all casino rules. (Bet on group of numbers,
-# odd/even, etc.). If player won we add prise to his account and display it. After each game we ask if he wants
-# to continue playing or quiting. If He quits with less amount of money than when he entered, we display how much
-# casino made, if he won more than he had we display his profits and total amount of money.
 from player import Player
 from roulette import Roulette
 from bet import Bet
-import os
-
+import shutil
 
 
 minimum_bet = 0.5
 roulette_profits = 0.0
 player_profits = 0.0
+player = None
 
 
 def main():
+
+    while player.bank < minimum_bet:
+        print(
+            f'\nSorry, you have less CSCoins ({player.bank}) than our minimum bet ({minimum_bet}).\n')
+        player.insert_coins()
 
     print(f'\n!!!LET THE GAME BEGIN!!!')
 
@@ -27,20 +27,20 @@ def main():
             # Roll the wheel
             roulette_result = Roulette.spin()
 
-            # Show summury result of the round, player's ballance and offers to look through all the bets
+            # Show summary result of the round, player's balance and offers to look through all the bets
             game_results(player_bets, roulette_result)
 
         # If player have less than minimum bet, ask if he want to refresh balance if he don't kick him from casino
         if player.bank < minimum_bet:
-            if input(f'\nUnfortunately you have less CSCoins than our minimum bet.\n'
-                     f'\nDo you want to add some CSCoins? [Y/N] ')[0].strip().upper() == 'Y':
+            if input(f'\nUnfortunately, you have less CSCoins than our minimum bet.\n'
+                     f'Do you want to add some CSCoins? [Y/N] ')[0].strip().upper() == 'Y':
                 player.insert_coins(minimum_bet)
             else:
                 print(f'\nGoodbye! Better luck next time!')
                 break
 
-        # Show player ballance
-        print(f'\nYour ballance = {player.bank}\n')
+        # Show player balance
+        print(f'\nYour balance = {player.bank}')
 
         # Ask if he want to play again
         if input(f'\nDo you want to play one more round? [Y/N] ')[0].strip().upper() == 'N':
@@ -52,9 +52,9 @@ def main():
 
 def get_bets():
     '''
-    Function create a list of player bets. It checks that player have enough money for next bet, asks to input sum,
-    checks it in bet_check function, withdraw sum from player account, and add an object bet into bets list.
-    Then it asks player does he want to bet more, if Y ---> Loops, if N ---> exit. Show all the bets and return the list of bets
+    Function creates a list of player bets. It checks that the player has, enough money for next bet, asks to input a sum,
+    check it in the bet_check function, withdraw sum from player account, and add an object bet into the bets list.
+    Then it asks the player if he wants to bet more, if Y ---> Loops, if N ---> exit. Show all the bets and return the list of bets
     '''
 
     bets = []
@@ -81,18 +81,17 @@ def get_bets():
             continue
         bet_amount = float(bet_amount)
 
-        # Witdraw coins from player account
+        # Withdraw coins from player account
         player.withdrawal(bet_amount)
 
         # Create a bet object and add it to bets list
-        bet = Bet(bets_counter, bet_amount)
+        bet = Bet(bets_counter)
+        bet.place_a_bet(bet_amount)
         bets.append(bet)
 
         # Check if player want to bet more
         if input(f'\nWould you like to place another bet? [Y/N] ')[0].strip().upper() == 'N':
             break
-
-
 
     # If no bets were made inform player about it
     if len(bets) == 0:
@@ -111,17 +110,18 @@ def get_bets():
 
 def bet_check(value_to_check: str):
     '''
-    Functiom check that bet is a float number >= minimum and it checks that bet is less then players bank. Return True if Valid else: False
+    Function check that bet is a float number >= minimum and it checks that bet is less then players bank. Return True if Valid else: False
     '''
+    global player
     try:
         value_to_check = float(value_to_check)
     except ValueError:
         print(f'\nSorry, I did not understand...\n'
-              f'Plese, type a positive sum (e.g. 11.20)')
+              f'Please, type a positive sum (e.g. 11.20)')
         return False
     if value_to_check < minimum_bet:
         print(
-            f'\nSorry, you are trying to bet less than our mininmum bet ({minimum_bet}). Please, bet more!')
+            f'\nSorry, you are trying to bet less than our minimum bet ({minimum_bet}). Please, bet more!')
         return False
     if value_to_check > player.bank:
         print(
@@ -129,16 +129,17 @@ def bet_check(value_to_check: str):
         return False
     return True
 
+
 def show_bets(bets):
     '''
     Printing out all bets player did
     '''
     print()
-    print("_"*os.get_terminal_size().columns)
+    print("_"*shutil.get_terminal_size().columns)
     for bet in bets:
         print()
         print(bet)
-        print("_"*os.get_terminal_size().columns)
+        print("_"*shutil.get_terminal_size().columns)
     print()
     input(f'Press Enter to continue... ')
 
@@ -151,7 +152,7 @@ def game_results(bets: list, ball: str):
     You have made N bet(s).
     You have won X bet(s). With summary amount = **.**
     You have lost Y bet(s). With summary amount = **.**
-    Your profit for this round = **.**. Your ballance = **.**
+    Your profit for this round = **.**. Your balance = **.**
 
     Offers to check all bets. Will show bets one by one (Enter input split) if Y
     If N return None and exit
@@ -159,35 +160,33 @@ def game_results(bets: list, ball: str):
 
     delta, win_sum, loose_sum = count_delta(bets, ball)
 
-
-
     win_count = sum(1 for bet in bets if bet.status)
     loose_count = len(bets) - win_count
 
     print(f'You have made {len(bets)} bet(s).\n'
           f'You have won {win_count} bet(s). With summary amount = {win_sum}\n'
           f'You have lost {loose_count} bet(s). With summary amount = {loose_sum}\n'
-          f'Your profit for this round = {delta}. Your ballance = {player.bank}\n')
+          f'Your profit for this round = {delta}. Your balance = {player.bank}\n')
 
     if input('Would you like to see details? [Y/N] ')[0].strip().upper() == 'N':
         return None
 
-    print("_"*os.get_terminal_size().columns)
+    print("_"*shutil.get_terminal_size().columns)
     for bet in bets:
         if bet.status:
             print(f'\nBet #{bet.n} result: !WON!'
                   f'\nBet type: {bet.type}, bet detail: {bet.variant}.'
-                  f'\nBall droped on on number {ball}, {Roulette.roulette_table[ball]['Color']}, in the {Roulette.roulette_table[ball]['Rows']}'
+                  f'\nBall dropped on on number {ball}, {Roulette.roulette_table[ball]['Color']}, in Row number {Roulette.roulette_table[ball]['Rows']}'
                   f'\nBet value: {bet.bet_value}. Bet multiplied by: {bet.multiplicator}'
                   f'\nYou won = {bet.bet_value * (bet.multiplicator - 1)}\n')
         else:
             print(f'\nBet #{bet.n} result: !LOST!'
                   f'\nBet type: {bet.type}, bet detail: {bet.variant}.'
-                  f'\nBall droped on on number {ball}, {Roulette.roulette_table[ball]['Color']}, in the {Roulette.roulette_table[ball]['Rows']}'
+                  f'\nBall dropped on on number {ball}, {Roulette.roulette_table[ball]['Color']}, in Row number {Roulette.roulette_table[ball]['Rows']}'
                   f'\nBet value: {bet.bet_value}.')
 
         print()
-        print("_"*os.get_terminal_size().columns)
+        print("_"*shutil.get_terminal_size().columns)
         input(f'\nPress Enter to see next bet... ')
         print()
 
@@ -195,7 +194,7 @@ def game_results(bets: list, ball: str):
 def count_delta(bets: list, ball: str):
     '''
     Check each bet and change its status: True if bet won, False if bet lost.
-    Count total delta of all bets and return it.
+    Count the total delta of all bets and return it.
     '''
     global roulette_profits
     global player_profits
@@ -240,7 +239,7 @@ def count_delta(bets: list, ball: str):
 
 def get_player_name():
     '''
-    Ask for player name and greets him. Checks that minimum 1 symbol in name Return player name : str
+    Ask for the player's name and greet him. Checks that minimum 1 symbol in name Return player name : str
     '''
     print(f'\nHow can we address you?\n')
     while True:
@@ -254,11 +253,15 @@ def get_player_name():
 
 
 def show_goodbye_message():
-    print(f'\n!!THANK YOU FOR PLAYING OUR ROULETTE!!\n'
-            f'Your balance = {player.bank}\n'
-            f'Roulette won = {roulette_profits}\n'
-            f'Your profit = {player_profits}\n\n')
+    print(f'\n!!THANK YOU FOR PLAYING OUR ROULETTE!!\n\n'
+          f'Your balance = {player.bank}\n'
+          f'Roulette won = {roulette_profits}\n'
+          f'Your profit = {player_profits}\n\n')
 
+
+def init_globals(name=''):
+    global player
+    player = Player(name, 0)
 
 
 if __name__ == '__main__':
@@ -271,6 +274,8 @@ if __name__ == '__main__':
         Roulette.show_rules()
 
     # Create player
-    player = Player(get_player_name(), minimum_bet)
+    name = get_player_name()
+    init_globals(name)
+    player.insert_coins()
 
     main()
