@@ -1,0 +1,488 @@
+from project import bet_check, count_delta, get_bets, init_globals, minimum_bet
+from bet import Bet
+from player import Player
+import shutil
+import unittest
+from unittest.mock import patch, call
+
+
+def main():
+    test_init_globals()
+    test_bet_check()
+    test_count_delta()
+    test_get_bets()
+
+
+def test_init_globals():
+    '''
+    Tests that player created and name is assigned correctly
+    Calls player to be a global var, it will be used in further tests
+    '''
+
+    global player
+
+    name = 'PlayerName'
+    player = None
+
+    init_globals(name)
+    from project import player
+    player.bank = minimum_bet+10
+
+    assert player.name == name
+    assert isinstance(player, Player)
+
+
+def test_bet_check():
+    '''
+    Tests correct return of bet_check function, should return True in case resieved a float number (minimum_bet)<= N <=(player.bank)
+    '''
+
+    assert bet_check('') == False
+    assert bet_check('Cat') == False
+    assert bet_check(str(minimum_bet - 0.1)) == False
+    assert bet_check(str(player.bank + 0.1)) == False
+    assert bet_check(str(minimum_bet)) == True
+    assert bet_check(str(minimum_bet + 0.1)) == True
+    assert bet_check(str(player.bank - 0.1)) == True
+    assert bet_check(str(player.bank)) == True
+
+
+def test_count_delta():
+    '''
+    Tests varius returns for test_count_delta, should return 3 elemnts (delta = summry of all bets,
+    win bets = summry of winning bets, loose bets = summry of lost bets)
+    '''
+    bet_0 = Bet(0)
+    bet_0._bet_value, bet_0.type, bet_0.variant, bet_0._multipicator = \
+        1, 'Single', '0', Bet.bet_type['Single']['multipicator']
+
+    bet_1 = Bet(1)
+    bet_1._bet_value, bet_1.type, bet_1.variant, bet_1._multipicator = \
+        1, 'Single', '1', Bet.bet_type['Single']['multipicator']
+
+    bet_2 = Bet(2)
+    bet_2._bet_value, bet_2.type, bet_2.variant, bet_2._multipicator = \
+        1, 'Single', '2', Bet.bet_type['Single']['multipicator']
+
+    bet_red = Bet(3)
+    bet_red._bet_value, bet_red.type, bet_red.variant, bet_red._multipicator = \
+        1, 'Red Black', 'Red', Bet.bet_type['Red Black']['multipicator']
+
+    bet_black = Bet(4)
+    bet_black._bet_value, bet_black.type, bet_black.variant, bet_black._multipicator = \
+        1, 'Red Black', 'Black', Bet.bet_type['Red Black']['multipicator']
+
+    bet_odd = Bet(5)
+    bet_odd._bet_value, bet_odd.type, bet_odd.variant, bet_odd._multipicator = \
+        1, 'Odd Even', 'Odd', Bet.bet_type['Odd Even']['multipicator']
+
+    bet_even = Bet(6)
+    bet_even._bet_value, bet_even.type, bet_even.variant, bet_even._multipicator = \
+        1, 'Odd Even', 'Even', Bet.bet_type['Odd Even']['multipicator']
+
+    bet_1_half = Bet(7)
+    bet_1_half._bet_value, bet_1_half.type, bet_1_half.variant, bet_1_half._multipicator = \
+        1, 'Halfs', '1-18', Bet.bet_type['Halfs']['multipicator']
+
+    bet_2_half = Bet(8)
+    bet_2_half._bet_value, bet_2_half.type, bet_2_half.variant, bet_2_half._multipicator = \
+        1, 'Halfs', '19-36', Bet.bet_type['Halfs']['multipicator']
+
+    bet_1_row = Bet(9)
+    bet_1_row._bet_value, bet_1_row.type, bet_1_row.variant, bet_1_row._multipicator = \
+        1, 'Rows', '1', Bet.bet_type['Rows']['multipicator']
+
+    bet_2_row = Bet(10)
+    bet_2_row._bet_value, bet_2_row.type, bet_2_row.variant, bet_2_row._multipicator = \
+        1, 'Rows', '2', Bet.bet_type['Rows']['multipicator']
+
+    bet_3_row = Bet(11)
+    bet_3_row._bet_value, bet_3_row.type, bet_3_row.variant, bet_3_row._multipicator = \
+        1, 'Rows', '3', Bet.bet_type['Rows']['multipicator']
+
+    bet_1_dozen = Bet(12)
+    bet_1_dozen._bet_value, bet_1_dozen.type, bet_1_dozen.variant, bet_1_dozen._multipicator = \
+        1, 'Dozens', '1-12', Bet.bet_type['Dozens']['multipicator']
+
+    bet_2_dozen = Bet(13)
+    bet_2_dozen._bet_value, bet_2_dozen.type, bet_2_dozen.variant, bet_2_dozen._multipicator = \
+        1, 'Dozens', '13-24', Bet.bet_type['Dozens']['multipicator']
+
+    bet_3_dozen = Bet(14)
+    bet_3_dozen._bet_value, bet_3_dozen.type, bet_3_dozen.variant, bet_3_dozen._multipicator = \
+        1, 'Dozens', '25-36', Bet.bet_type['Dozens']['multipicator']
+
+    ball_0 = '0'
+    ball_1 = '1'
+    ball_2 = '2'
+    ball_3 = '3'
+    ball_19 = '19'
+    ball_25 = '25'
+
+    # Check coorect outputs if ball drop on 0
+    assert count_delta([bet_0, bet_1], ball_0) == (35, 36, 1)
+    assert count_delta([bet_1, bet_2,
+                        bet_red, bet_black,
+                        bet_odd, bet_even,
+                        bet_1_half, bet_2_half,
+                        bet_1_row, bet_2_row, bet_3_row,
+                        bet_1_dozen, bet_2_dozen, bet_3_dozen], ball_0) == (-14, 0, 14)
+
+    # Check coorect outputs if ball deop on 1
+    assert count_delta([bet_1, bet_0], ball_1) == (35, 36, 1)
+    assert count_delta([bet_1, bet_2], ball_1) == (35, 36, 1)
+    assert count_delta([bet_red,
+                        bet_odd,
+                        bet_1_half,
+                        bet_1_row,
+                        bet_1_dozen], ball_1) == (7, 7, 0)
+    assert count_delta([bet_black,
+                        bet_even,
+                        bet_2_half,
+                        bet_2_row, bet_3_row,
+                        bet_2_dozen, bet_3_dozen], ball_1) == (-7, 0, 7)
+
+    # Check coorect outputs if ball deop on 2
+    assert count_delta([bet_2_row], ball_2) == (2, 2, 0)
+    assert count_delta([bet_1_row, bet_3_row], ball_2) == (-2, 0, 2)
+
+    # Check coorect outputs if ball deop on 3
+    assert count_delta([bet_3_row], ball_3) == (2, 2, 0)
+
+    # Check coorect outputs if ball deop on 19
+    assert count_delta([bet_2_half, bet_2_dozen], ball_19) == (3, 3, 0)
+    assert count_delta([bet_1_dozen], ball_19) == (-1, 0, 1)
+
+    # Check coorect outputs if ball deop on 25
+    assert count_delta([bet_3_dozen], ball_25) == (2, 2, 0)
+
+
+def test_get_bets():
+    '''
+    Tests that get_bets creates list of bets, checks fields of the bet object
+    '''
+
+    # Check that player balance decreases after bet
+    player.bank = minimum_bet + 10
+    with patch('builtins.input', side_effect=[f'{minimum_bet}', 'Single', '0', 'N', 'N']):
+        get_bets()
+        assert player.bank == 10
+
+    # Check for single type bet
+    player.bank = minimum_bet + 10
+    with patch('builtins.input', side_effect=[f'{minimum_bet + 10}', 'Single', '0', 'N', 'N']):
+
+        bets = get_bets()
+        bet_single = bets[0]
+
+        assert isinstance(bet_single, Bet)
+        assert bet_single.n == 1
+        assert bet_single.bet_value == minimum_bet + 10
+        assert bet_single.type == 'Single'
+        assert bet_single.variant == '0'
+        assert bet_single.multiplicator == 37
+
+    # Check for Red and Black type bet
+    player.bank = (minimum_bet * 2) + 20
+    with patch('builtins.input', side_effect=[f'{minimum_bet + 10}', 'Red Black', 'Black', 'Y', f'{minimum_bet + 10}', 'Red Black', 'Red', 'N', 'N']):
+
+        bets = get_bets()
+        bet_black = bets[0]
+        bet_red = bets[1]
+
+        for bet in bets:
+            assert isinstance(bet, Bet)
+            assert bet.bet_value == minimum_bet + 10
+            assert bet.type == 'Red Black'
+            assert bet.multiplicator == 2
+
+        assert bet_black.n == 1
+        assert bet_black.variant == 'Black'
+
+        assert bet_red.n == 2
+        assert bet_red.variant == 'Red'
+
+    # Check for Odd and Even type bet
+    player.bank = (minimum_bet * 2) + 40
+    with patch('builtins.input', side_effect=[f'{minimum_bet + 20}', 'Odd Even', 'Odd', 'Y', f'{minimum_bet + 20}', 'Odd Even', 'Even', 'N', 'N']):
+        bets = get_bets()
+        bet_odd = bets[0]
+        bet_even = bets[1]
+
+        for bet in bets:
+            assert isinstance(bet, Bet)
+            assert bet.bet_value == 20 + minimum_bet
+            assert bet.type == 'Odd Even'
+            assert bet.multiplicator == 2
+
+        assert bet_odd.n == 1
+        assert bet_odd.variant == 'Odd'
+
+        assert bet_even.n == 2
+        assert bet_even.variant == 'Even'
+
+    # Check for Halfs type bet
+    player.bank = (minimum_bet * 2) + 20
+    with patch('builtins.input', side_effect=[f'{minimum_bet + 10}', 'Halfs', '1-18', 'Y', f'{minimum_bet + 10}', 'Halfs', '19-36', 'N', 'N']):
+        bets = get_bets()
+        bet_1_half = bets[0]
+        bet_2_half = bets[1]
+
+        for bet in bets:
+            assert isinstance(bet, Bet)
+            assert bet.bet_value == 10 + minimum_bet
+            assert bet.type == 'Halfs'
+            assert bet.multiplicator == 2
+
+        assert bet_1_half.n == 1
+        assert bet_1_half.variant == '1-18'
+
+        assert bet_2_half.n == 2
+        assert bet_2_half.variant == '19-36'
+
+    # Check for Rows type bet
+    player.bank = (minimum_bet * 3) + 30
+    with patch('builtins.input', side_effect=[f'{minimum_bet + 10}', 'Rows', '1', 'Y', f'{minimum_bet + 10}', 'Rows', '2', 'Y',
+                                              f'{minimum_bet + 10}', 'Rows', '3', 'N', 'N']):
+        bets = get_bets()
+        bet_1_row = bets[0]
+        bet_2_row = bets[1]
+        bet_3_row = bets[2]
+
+        for bet in bets:
+            assert isinstance(bet, Bet)
+            assert bet.bet_value == 10 + minimum_bet
+            assert bet.type == 'Rows'
+            assert bet.multiplicator == 3
+
+        assert bet_1_row.n == 1
+        assert bet_1_row.variant == '1'
+
+        assert bet_2_row.n == 2
+        assert bet_2_row.variant == '2'
+
+        assert bet_3_row.n == 3
+        assert bet_3_row.variant == '3'
+
+    # Check for Dozens type bet
+    player.bank = (minimum_bet * 3) + 30
+    with patch('builtins.input', side_effect=[f'{minimum_bet + 10}', 'Dozens', '1-12', 'Y', f'{minimum_bet + 10}', 'Dozens', '13-24', 'Y',
+                                              f'{minimum_bet + 10}', 'Dozens', '25-36', 'N', 'N']):
+        bets = get_bets()
+        bet_1_dozen = bets[0]
+        bet_2_dozen = bets[1]
+        bet_3_dozen = bets[2]
+
+        for bet in bets:
+            assert isinstance(bet, Bet)
+            assert bet.bet_value == 10 + minimum_bet
+            assert bet.type == 'Dozens'
+            assert bet.multiplicator == 3
+
+        assert bet_1_dozen.n == 1
+        assert bet_1_dozen.variant == '1-12'
+
+        assert bet_2_dozen.n == 2
+        assert bet_2_dozen.variant == '13-24'
+
+        assert bet_3_dozen.n == 3
+        assert bet_3_dozen.variant == '25-36'
+
+        # Check not enough money message on 1-st bet
+        player.bank = minimum_bet - 0.1
+
+        with patch('builtins.input', side_effect=[]), patch('builtins.print') as mock_print:
+            bets = get_bets()
+            mock_print.assert_has_calls([call(f'\nPlace your bet!'),
+                                         call(
+                                             f'\nSorry, you do not have enough CSCoins for one more bet. Your current balance = {player.bank}'),
+                                         call(f'\nYou have not made any bet.\n')])
+            assert bets == None
+
+        # Check inncorrect inputs for all types and variants
+        with patch('builtins.input', side_effect=[
+                f'{minimum_bet}', 'Cat', 'Single', 'Cat', '100', '1', 'Y',
+                f'{minimum_bet}', 'Cat', 'Red Black', 'Cat', 'Red', 'Y',
+                f'{minimum_bet}', 'Cat', 'Odd Even', 'Cat', 'Odd', 'Y',
+                f'{minimum_bet}', 'Cat', 'Halfs', 'Cat', '0', '1-18', 'Y',
+                f'{minimum_bet}', 'Cat', 'Rows', 'Cat', '4', '2', 'Y',
+                f'{minimum_bet}', 'Cat', 'Dozens', 'Cat', '100', '13-24', 'N', 'N']), \
+                patch('builtins.print') as mock_print:
+
+            player.bank = minimum_bet * 6 + 210
+
+            bets = get_bets()
+            bet_single = bets[0]
+            bet_red = bets[1]
+            bet_odd = bets[2]
+            bet_half = bets[3]
+            bet_row = bets[4]
+            bet_dozen = bets[5]
+
+            player.bank = minimum_bet * 6 + 210
+
+            mock_print.assert_has_calls([
+                call(f'\nPlace your bet!'),
+
+                call(f'\nHow much would you like to bet? (Your balance = {player.bank})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nThis is incorrect type. Please try once again\nChoose from given types: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_single.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_single.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_single.type]['variants'])}\n'),
+
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - minimum_bet})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nThis is incorrect type. Please try once again\nChoose from given types: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_red.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_red.type]['variants'])}\n'),
+
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - minimum_bet * 2})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nThis is incorrect type. Please try once again\nChoose from given types: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_odd.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_odd.type]['variants'])}\n'),
+
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - minimum_bet * 3})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nThis is incorrect type. Please try once again\nChoose from given types: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_half.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_half.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_half.type]['variants'])}\n'),
+
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - minimum_bet * 4})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nThis is incorrect type. Please try once again\nChoose from given types: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_row.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_row.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_row.type]['variants'])}\n'),
+
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - minimum_bet * 5})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nThis is incorrect type. Please try once again\nChoose from given types: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_dozen.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_dozen.type]['variants'])}\n'),
+                call(
+                    f'\nPlease provide correct variant. Type it exactly as stated in list\nvariants are: {', '.join(Bet.bet_type[bet_dozen.type]['variants'])}\n'),
+
+                call(f'\nYou have made {bet_dozen.n} bet(s).\n')
+            ])
+
+        # Check every type of bet and various value of bet correctly stored, check outprinint all bets
+        # and exiting via player.bank < minimum_bet
+        player.bank = (minimum_bet * 6) + 210
+        with patch('builtins.input', side_effect=[
+                f'{minimum_bet + 10}', 'Single', '1', 'Y',
+                f'{minimum_bet + 20}', 'Red Black', 'Red', 'Y',
+                f'{minimum_bet + 30}', 'Odd Even', 'Odd', 'Y',
+                f'{minimum_bet + 40}', 'Halfs', '1-18', 'Y',
+                f'{minimum_bet + 50}', 'Rows', '2', 'Y',
+                f'{minimum_bet + 60}', 'Dozens', '13-24', 'Y', 'Y', '']), \
+                patch('builtins.print') as mock_print:
+
+            bets = get_bets()
+            bet_single = bets[0]
+            bet_red = bets[1]
+            bet_odd = bets[2]
+            bet_half = bets[3]
+            bet_row = bets[4]
+            bet_dozen = bets[5]
+
+            assert bet_single.bet_value == 10 + minimum_bet
+            assert bet_red.bet_value == 20 + minimum_bet
+            assert bet_odd.bet_value == 30 + minimum_bet
+            assert bet_half.bet_value == 40 + minimum_bet
+            assert bet_row.bet_value == 50 + minimum_bet
+            assert bet_dozen.bet_value == 60 + minimum_bet
+
+            player.bank = (minimum_bet * 6) + 210
+            mock_print.assert_has_calls([
+                call(f'\nPlace your bet!'),
+                call(f'\nHow much would you like to bet? (Your balance = {player.bank})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_single.type]['variants'])}\n'),
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - 10 - minimum_bet})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_red.type]['variants'])}\n'),
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - 10 - 20 - (minimum_bet * 2)})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_odd.type]['variants'])}\n'),
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - 10 - 20 - 30 - (minimum_bet * 3)})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_half.type]['variants'])}\n'),
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - 10 - 20 - 30 - 40 - (minimum_bet * 4)})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_row.type]['variants'])}\n'),
+                call(
+                    f'\nHow much would you like to bet? (Your balance = {player.bank - 10 - 20 - 30 - 40 - 50 - (minimum_bet * 5)})\n'),
+                call(f'\nChoose the type of bet: {', '.join(Bet.bet_type.keys())}\n'),
+                call(
+                    f'\nWhat do you want to bet on?\n\nHere are the variants: {', '.join(Bet.bet_type[bet_dozen.type]['variants'])}\n'),
+                call(
+                    f'\nSorry, you do not have enough CSCoins for one more bet. Your current balance = {player.bank - 10 - 20 - 30 - 40 - 50 - 60 - (minimum_bet * 6)}'),
+
+                call(f'\nYou have made {bet_dozen.n} bet(s).\n'),
+
+                call(),
+                call("_"*shutil.get_terminal_size().columns),
+
+                call(),
+                call(bet_single),
+                call("_"*shutil.get_terminal_size().columns),
+                call(),
+                call(bet_red),
+                call("_"*shutil.get_terminal_size().columns),
+                call(),
+                call(bet_odd),
+                call("_"*shutil.get_terminal_size().columns),
+                call(),
+                call(bet_half),
+                call("_"*shutil.get_terminal_size().columns),
+                call(),
+                call(bet_row),
+                call("_"*shutil.get_terminal_size().columns),
+                call(),
+                call(bet_dozen),
+                call("_"*shutil.get_terminal_size().columns),
+
+                call()])
+
+
+if __name__ == '__main__':
+
+    main()
