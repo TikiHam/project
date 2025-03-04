@@ -1,19 +1,19 @@
 class ErrorDepositLessZero(Exception):
     '''
-    Raise when try to feposit negative amount of value
+    Raised when trying to deposit a negative amount of value
     '''
     pass
 
 
 class Player:
 
-    def __init__(self, name: str, min_bet: float):
+    def __init__(self, name: str, bank: float):
         '''
-        Create a player with 0.0 bank, assign name, call insert_coins function which will deposit CSCoins to players bank
+        Create a player with 0.0 bank, assign name,
+        call insert_coins function which will deposit CSCoins to player's bank
         '''
-        self.bank = 0.0
+        self.bank = bank
         self.name = name
-        self.insert_coins(min_bet)
 
     def withdrawal(self, value: float):
         self.bank = self.bank - value
@@ -21,12 +21,13 @@ class Player:
     def deposit(self, value: float):
         self.bank = self.bank + value
 
-    def insert_coins(self, minimum_bet: float):
+    def insert_coins(self):
         '''
-        Function check that coins are float >0, then deposit on player account. Check, that player bank is grater
-        than minimum bet. If not ask to do it again
+        Function check that coins are float >0, then deposit on the player account.
+        Check, that player bank is greater than the minimum bet.
+        If not ask to do it again
         '''
-        print(f'How much CSCoins do you want to cash-in?\n')
+        print(f'Please insert CSCoins coins\n')
         while True:
             coins = input('Coins: ')
 
@@ -34,22 +35,19 @@ class Player:
                 coins = float(coins)
             except ValueError:
                 print(f'\nSorry, I did not understand...\n'
-                      f'Please tell me how many CSCoins would you want to cash-in. Type a positive summ. (e.g. 15.6)\n')
+                      f'Please tell me how many CSCoins you want to cash-in. Type a positive summ. (e.g. 15.6)\n')
                 continue
-            if coins <= 0:
-                print(f'\nSorry, please insert a postive amount of CSCoins!')
+            if coins < 0:
+                print(f'\nSorry, please insert a positive amount of CSCoins!')
                 continue
             self.deposit(coins)
-            if self.bank < minimum_bet:
-                print(f'\nWe are sorry, but our minimum bet is {minimum_bet}.\n'
-                      f'And you only have {self.bank} CSCoins\n'
-                      f'Please insert more CSCoins\n')
-                continue
+
             break
 
     @property
     def bank(self):
-        return self._bank
+
+        return round(self._bank, 2)
 
     @bank.setter
     def bank(self, value: float):
