@@ -6,29 +6,28 @@ class Bet:
                 'Red Black': {'variants': ['Red', 'Black'], 'multipicator': 2},
                 'Odd Even': {'variants': ['Odd', 'Even'], 'multipicator': 2},
                 'Halfs': {'variants': ['1-18', '19-36'], 'multipicator': 2},
-                'Rows': {'variants': ['1-th row', '2-nd row', '3-rd row'], 'multipicator': 3},
-                'Dozens': {'variants': ['1-12', '13-24', '25-36'], 'multipicator': 2}}
+                'Rows': {'variants': ['1', '2', '3'], 'multipicator': 3},
+                'Dozens': {'variants': ['1-12', '13-24', '25-36'], 'multipicator': 3}}
 
-    def __init__(self, n: int, money: float):
+    def __init__(self, n: int):
         self._n = n
         self.status = None
-        self.place_a_bet(money)
 
     def __str__(self):
         return (f'This is bet #{self.n}.\n'
                 f'The type of your bet is {self.type}. And you bet on {self.variant}.\n'
                 f'You bet {self.bet_value}, and in chance of winning, your money will be multiplied by {self.multiplicator}.\n'
-                f'Possible win on this bet = {self.bet_value * (self.multiplicator - 1)}!\n\n')
+                f'Possible win on this bet = {self.bet_value * (self.multiplicator - 1)}!')
 
-    def place_a_bet(self, money):
+    def place_a_bet(self, money: float):
         self._bet_value = money
 
         print(f'\nChoose the type of bet: {', '.join(self.bet_type.keys())}\n')
-        self.type = input('Type: ').strip().lower().capitalize()
+        self.type = input('Type: ').strip().lower().title()
 
         print(f'\nWhat do you want to bet on?\n'
-              f'\nHere are the wariants: {', '.join(self.bet_type[self.type]['variants'])}\n')
-        self.variant = input('Variant: ').strip().lower().capitalize()
+              f'\nHere are the variants: {', '.join(self.bet_type[self.type]['variants'])}\n')
+        self.variant = input('Variant: ').strip().lower().title()
 
         self._multipicator = self.bet_type[self.type]['multipicator']
 
