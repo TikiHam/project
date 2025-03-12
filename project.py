@@ -70,8 +70,7 @@ def get_bets():
                 f'\nSorry, you do not have enough CSCoins for one more bet. Your current balance = {player.bank}')
             break
 
-        # Incremating bet counter
-        bets_counter += 1
+        
 
         print(f'\nHow much would you like to bet? (Your balance = {player.bank})\n')
         bet_amount = input(f'Bet: ').strip()
@@ -80,6 +79,9 @@ def get_bets():
         if not bet_check(bet_amount):
             continue
         bet_amount = float(bet_amount)
+
+        # Incremating bet counter
+        bets_counter += 1
 
         # Withdraw coins from player account
         player.withdrawal(bet_amount)
