@@ -53,8 +53,9 @@ class Roulette:
         print(f'\nALL BETS ARE OFF!\n'
               f'LETS SPIN THE WHEEL!!!\n')
         for _ in range(cls.wheel_spin_time):
+            to_screen = ' 🎲 '
             # to_screen = random.choice([' 💰 ',' 🍒 ', ' 🎲 ', ' 💸 ', ' 🎱 ', ' 🏦 ', ' 7️⃣ ', ' 🏇 '])
-            print(' 🎲 ', end='')
+            print(to_screen, end='')
             sys.stdout.flush()
             time.sleep(1)
         ball_number = str(random.randint(0, 36))
