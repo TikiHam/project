@@ -178,13 +178,13 @@ def game_results(bets: list, ball: str):
         if bet.status:
             print(f'\nBet #{bet.n} result: !WON!'
                   f'\nBet type: {bet.type}, bet detail: {bet.variant}.'
-                  f'\nBall dropped on on number {ball}, {Roulette.roulette_table[ball]['Color']}, in Row number {Roulette.roulette_table[ball]['Rows']}'
+                  f'\nBall dropped on on number {ball}, {Roulette.roulette_table[ball]["Color"]}, in Row number {Roulette.roulette_table[ball]["Rows"]}'
                   f'\nBet value: {bet.bet_value}. Bet multiplied by: {bet.multiplicator}'
                   f'\nYou won = {bet.bet_value * (bet.multiplicator - 1)}\n')
         else:
             print(f'\nBet #{bet.n} result: !LOST!'
                   f'\nBet type: {bet.type}, bet detail: {bet.variant}.'
-                  f'\nBall dropped on on number {ball}, {Roulette.roulette_table[ball]['Color']}, in Row number {Roulette.roulette_table[ball]['Rows']}'
+                  f'\nBall dropped on on number {ball}, {Roulette.roulette_table[ball]["Color"]}, in Row number {Roulette.roulette_table[ball]["Rows"]}'
                   f'\nBet value: {bet.bet_value}.')
 
         print()

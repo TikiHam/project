@@ -63,7 +63,7 @@ class Roulette:
         if ball_number == '0':
             print(f'IT IS ZERO!!!\n')
         else:
-            print(f'IT IS: {ball_number}, {cls.roulette_table[ball_number]['Color'].upper()}!!!\n')
+            print(f'IT IS: {ball_number}, {cls.roulette_table[ball_number]["Color"].upper()}!!!\n')
 
         time.sleep(2)
         return ball_number
@@ -112,8 +112,8 @@ class Roulette:
         for type, bet_detail in Bet.bet_type.items():
             print(f'\nYou can bet on {type} bet type.\n'
                   f'Then you can choose a variant:\n'
-                  f'{', '.join(bet_detail['variants'])}\n'
-                  f'In case of winning your bet will be multiplied by {bet_detail['multipicator']}')
+                  f'{", ".join(bet_detail["variants"])}\n'
+                  f'In case of winning your bet will be multiplied by {bet_detail["multipicator"]}')
             print("_"*shutil.get_terminal_size().columns)
 
         print()

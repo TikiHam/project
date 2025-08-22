@@ -22,11 +22,11 @@ class Bet:
     def place_a_bet(self, money: float):
         self._bet_value = money
 
-        print(f'\nChoose the type of bet: {', '.join(self.bet_type.keys())}\n')
+        print(f'\nChoose the type of bet: {", ".join(self.bet_type.keys())}\n')
         self.type = input('Type: ').strip().lower().title()
 
         print(f'\nWhat do you want to bet on?\n'
-              f'\nHere are the variants: {', '.join(self.bet_type[self.type]['variants'])}\n')
+              f'\nHere are the variants: {", ".join(self.bet_type[self.type]["variants"])}\n')
         self.variant = input('Variant: ').strip().lower().title()
 
         self._multipicator = self.bet_type[self.type]['multipicator']
@@ -53,7 +53,7 @@ class Bet:
             self._variant = v
         else:
             print(f'\nPlease provide correct variant. Type it exactly as stated in list\n'
-                  f'variants are: {', '.join(self.bet_type[self.type]['variants'])}\n')
+                  f'variants are: {", ".join(self.bet_type[self.type]["variants"])}\n')
             self.variant = input('Variant: ').strip()
 
     @property
@@ -66,5 +66,5 @@ class Bet:
             self._type = u_i
         else:
             print(f'\nThis is incorrect type. Please try once again\n'
-                  f'Choose from given types: {', '.join(self.bet_type.keys())}\n')
+                  f'Choose from given types: {", ".join(self.bet_type.keys())}\n')
             self.type = input('Type: ').strip()
